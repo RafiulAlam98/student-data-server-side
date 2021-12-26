@@ -44,6 +44,24 @@ const run = async() =>{
                res.json(result)
           })
 
+          // update status
+          app.put('/students/:id', async(req,res)=>{
+               const id = req.params.id
+               const updateInfo = req.body
+               console.log(updateInfo)
+               const filter = {_id:ObjectId(id)}
+               const option = {upsert : true}
+               const updateDoc = {
+                    $set: {
+                      status: `Active`
+                    },
+                  };
+               const result = await studentsCollection.updateOne(filter,updateDoc,option)
+
+               res.json(result)
+          })
+
+
 
           app.get('/', (req, res) => {
                console.log("server running")
