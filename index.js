@@ -22,18 +22,21 @@ const run = async() =>{
           const database = client.db("student-database");
           const studentsCollection = database.collection("studentsInfo");
 
+          // get all students information
           app.get('/students',async (req,res)=>{
                const cursor =  studentsCollection.find({})
                const result = await cursor.toArray()
                res.json(result)
           })
 
+          // add new student
           app.post('/students',async(req,res) => {
                console.log(req.body)
                const doc = await studentsCollection.insertOne(req.body)
                res.json(doc)
           })
 
+          // delete student information
           app.delete('/students/:id',async(req,res)=>{
                console.log(req.params.id)
                const query = {_id:ObjectId(req.params.id)}
