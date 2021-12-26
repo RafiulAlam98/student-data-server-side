@@ -6,25 +6,59 @@ const cors = require('cors')
 app.use(cors())
 app.use(express.json())
 
+const ObjectId = require('mongodb').ObjectId
 require ('dotenv').config()
 
 
-
-const { MongoClient } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.qlklf.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-client.connect(err => {
-  const collection = client.db("test").collection("devices");
-  // perform actions on the collection object
-  client.close();
-});
 
 
-app.get('/', (req, res) => {
-     console.log("server running")
-     res.send('Server Running')
-})
+const run = async() =>{
+     try{
+          await client.connect();
+          console.log("database connected")
+          
+          const database = client.db("student-database");
+          const studentsCollection = database.collection("studentsInfo");
 
-app.listen(port, () => {
-     console.log("listening from port",port)
-})
+          app.get('/students',async (req,res)=>{
+               const cursor =  studentsCollection.find({})
+               const result = await cursor.toArray()
+               res.json(result)
+          })
+
+          app.post('/students',async(req,res) => {
+               console.log(req.body)
+               const doc = await studentsCollection.insertOne(req.body)
+               res.json(doc)
+          })
+
+          app.delete('/students/:id',async(req,res)=>{
+               console.log(req.params.id)
+               const query = {_id:ObjectId(req.params.id)}
+               const result = await studentsCollection.deleteOne(query)  
+               res.json(result)
+          })
+
+
+          app.get('/', (req, res) => {
+               console.log("server running")
+               res.send('Server Running')
+          })
+          
+          app.listen(port, () => {
+               console.log("listening from port",port)
+          })
+          
+
+     }
+     finally {
+          // await client.close();
+     }
+    
+
+}
+
+
+run().catch(console.dir);
